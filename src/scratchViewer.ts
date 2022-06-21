@@ -1,70 +1,16 @@
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from './dispose';
 
-interface ScratchDocumentDelegate {
-	getFileData(): Promise<Uint8Array>;
-}
+/*
+References:
 
-class ScratchDocument extends Disposable implements vscode.CustomDocument {
-
-	static async create(
-		uri: vscode.Uri,
-		backupId: string | undefined,
-		delegate: ScratchDocumentDelegate,
-	): Promise<ScratchDocument | PromiseLike<ScratchDocument>> {
-		// If we have a backup, read that. Otherwise read the resource from the workspace
-		const dataFile = typeof backupId === 'string' ? vscode.Uri.parse(backupId) : uri;
-		const fileData = await ScratchDocument.readFile(dataFile);
-		return new ScratchDocument(uri, fileData, delegate);
-	}
-
-	private static async readFile(uri: vscode.Uri): Promise<Uint8Array> {
-		if (uri.scheme === 'untitled') {
-			return new Uint8Array();
-		}
-		return new Uint8Array(await vscode.workspace.fs.readFile(uri));
-	}
-
-	private readonly _uri: vscode.Uri;
-
-	private _documentData: Uint8Array;
-
-	private readonly _delegate: ScratchDocumentDelegate;
-
-	private constructor(
-		uri: vscode.Uri,
-		initialContent: Uint8Array,
-		delegate: ScratchDocumentDelegate
-	) {
-		super();
-		this._uri = uri;
-		this._documentData = initialContent;
-		this._delegate = delegate;
-	}
-
-	public get uri() { return this._uri; }
-
-	public get documentData(): Uint8Array { return this._documentData; }
-
-	private readonly _onDidDispose = this._register(new vscode.EventEmitter<void>());
-	/**
-	 * Fired when the document is disposed of.
-	 */
-	public readonly onDidDispose = this._onDidDispose.event;
-
-	/**
-	 * Called by VS Code when there are no more references to the document.
-	 *
-	 * This happens when all editors for it have been closed.
-	 */
-	dispose(): void {
-		this._onDidDispose.fire();
-		super.dispose();
-	}
-}
+https://github.com/microsoft/vscode/blob/24c814dd015dbbfe1542662413ddadc5197902d4/extensions/image-preview/src/preview.ts
+https://github.com/microsoft/vscode-extension-samples/blob/main/custom-editor-sample/src/pawDrawEditor.ts
+*/
 
 
-export class ScratchViewerEditorProvider implements vscode.CustomReadonlyEditorProvider<ScratchDocument> {
+
+export class ScratchViewerEditorProvider implements vscode.CustomReadonlyEditorProvider {
 
 	public static register(context: vscode.ExtensionContext): vscode.Disposable {
 		return vscode.window.registerCustomEditorProvider(
@@ -92,34 +38,12 @@ export class ScratchViewerEditorProvider implements vscode.CustomReadonlyEditorP
 		private readonly _context: vscode.ExtensionContext
 	) { }
 
-	//#region CustomEditorProvider
-
-	async openCustomDocument(
-		uri: vscode.Uri,
-		openContext: { backupId?: string },
-		_token: vscode.CancellationToken
-	): Promise<ScratchDocument> {
-		const document: ScratchDocument = await ScratchDocument.create(uri, openContext.backupId, {
-			getFileData: async () => {
-				const webviewsForDocument = Array.from(this.webviews.get(document.uri));
-				if (!webviewsForDocument.length) {
-					throw new Error('Could not find webview to save for');
-				}
-				const panel = webviewsForDocument[0];
-				const response = await this.postMessageWithResponse<number[]>(panel, 'getFileData', {});
-				return new Uint8Array(response);
-			}
-		});
-
-		const listeners: vscode.Disposable[] = [];
-
-		document.onDidDispose(() => disposeAll(listeners));
-
-		return document;
+	async openCustomDocument(uri: vscode.Uri) {
+		return {uri, dispose: () => { }};
 	}
 
 	async resolveCustomEditor(
-		document: ScratchDocument,
+		document: vscode.CustomDocument,
 		webviewPanel: vscode.WebviewPanel,
 		_token: vscode.CancellationToken
 	): Promise<void> {
@@ -134,50 +58,78 @@ export class ScratchViewerEditorProvider implements vscode.CustomReadonlyEditorP
 
 		webviewPanel.webview.onDidReceiveMessage(e => this.onMessage(document, e));
 
+		const filedata = new Uint8Array(await vscode.workspace.fs.readFile(document.uri));
+
 		// Wait for the webview to be properly ready before we init
 		webviewPanel.webview.onDidReceiveMessage(e => {
+			console.log("vscode got message", e);
 			if (e.type === 'ready') {
 				this.postMessage(webviewPanel, 'init', {
-					value: document.documentData,
+					value: new Uint8Array(filedata)
 				});
 			}
 		});
+
+		console.log("finished resolveCustomEditor");
 	}
-
-	private readonly _onDidChangeCustomDocument = new vscode.EventEmitter<vscode.CustomDocumentEditEvent<ScratchDocument>>();
-	public readonly onDidChangeCustomDocument = this._onDidChangeCustomDocument.event;
-
-	//#endregion
 
 	/**
 	 * Get the static HTML used for in our editor's webviews.
 	 */
 	private getHtmlForWebview(webview: vscode.Webview): string {
-		// Local path to script and css for the webview
-		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(
-			this._context.extensionUri, 'media', 'pawDraw.js'));
-
-		const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(
-			this._context.extensionUri, 'media', 'reset.css'));
-
-		const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(
-			this._context.extensionUri, 'media', 'vscode.css'));
-
-		const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(
-			this._context.extensionUri, 'media', 'pawDraw.css'));
-
 		return /* html */`
 			<!DOCTYPE html>
-			<html lang="en">
-			<head>
-				<meta charset="UTF-8">
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<link href="${styleMainUri}" rel="stylesheet" />
-			</head>
-			<body>
-				<h1>Hello, world!</h1>
-			</body>
-			</html>`;
+			<html>
+				<head>
+					<style>
+						body {
+							padding: 0;
+							height: 100vh;
+							display: flex;
+							flex-flow: column;
+							overflow: hidden
+						}
+						.controls > * {
+							display: inline-block;
+							font-size: 2.5em !important;
+						}
+						#scratch-stage {
+							max-width: 480px;
+							min-width: 240px;
+							height: auto;
+						}
+						h3 {
+							margin-left: 1em;
+						}
+						#console {
+							background-color: #000;
+							padding: 1em;
+							margin: 0;
+							width: 100%;
+							white-space: pre-wrap;
+							overflow-y: scroll;
+							box-sizing: border-box;
+						}
+					</style>
+					<link href="${webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.css'))}" rel="stylesheet" />
+				</head>
+				<body>
+					<div class="controls">
+						<div id="green-flag-button" class="codicon codicon-debug-start"></div>
+						<div id="stop-button" class="codicon codicon-debug-stop"></div>
+					</div>
+					<canvas id="scratch-stage"></canvas>
+					<!--<h3>Console:</h3>
+					<pre id="console">some text here
+some more text here
+even more text
+blah
+					</pre>-->
+					<script src="${webview.asWebviewUri(vscode.Uri.joinPath(
+						this._context.extensionUri, 'out', 'viewer-main.js'))}"></script>
+				</body>
+			</html>
+		`;
 	}
 
 	private _requestId = 1;
@@ -194,7 +146,8 @@ export class ScratchViewerEditorProvider implements vscode.CustomReadonlyEditorP
 		panel.webview.postMessage({ type, body });
 	}
 
-	private onMessage(document: ScratchDocument, message: any) {
+	private onMessage(document: vscode.CustomDocument, message: any) {
+		console.log("vscode got onMessage", message);
 		switch (message.type) {
 			case 'response':
 				{
