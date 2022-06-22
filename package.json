@@ -2,7 +2,7 @@
 	"name": "scratch-vscode",
 	"displayName": "scratch-vscode",
 	"description": "Preview Scratch .sb3 project files",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/DavidBuchanan314/scratch-vscode.git"

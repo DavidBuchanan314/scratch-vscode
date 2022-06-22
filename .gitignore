@@ -105,3 +105,6 @@ dist
 
 # TypeScript output
 out/
+
+# packages
+*.vsix
