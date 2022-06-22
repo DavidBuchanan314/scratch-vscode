@@ -1,70 +1,35 @@
-# scratch-vscode README
+# scratch-vscode
 
-This is the README for your extension "scratch-vscode". After writing up a brief description, we recommend including the following sections.
+Preview Scratch projects (`.sb3`) inside vscode - with live reload.
 
-## Features
+This is useful if you're writing code that generates Scratch code, and you want
+a quick feedback loop.
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+The code is a bit janky because I don't really know JS or TypeScript, and I took one
+of the vscode extension samples and hacked out everything I didn't think I needed.
 
-For example if there is an image subfolder under your extension project workspace:
+## Current Limitations
 
-\!\[feature X\]\(images/feature-x.png\)
+- Variable/List monitors are not yet supported.
+- The "ask and wait" block doesn't work yet.
+- No sound on music blocks (I need to figure out how to load the assets).
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+## Planned Features
 
-## Requirements
+- Viewing the scratch blocks contained within a `.sprite3` file.
+- A way to log messages from a scratch project.
+- Debugger integration? Being able to view variables at least, would be useful.
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+# Installation
 
-## Extension Settings
+Uhhh idk I haven't figured that out yet lol.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+If you want to test/debug it, these steps should hopefully work:
 
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+```
+git clone https://github.com/DavidBuchanan314/scratch-vscode
+cd scratch-vscode
+make install
+npm run compile
+[press F5 in vscode]
+```
