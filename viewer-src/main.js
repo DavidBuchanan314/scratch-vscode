@@ -97,6 +97,7 @@
 		console.log("got message", message);
 		switch (message.type) {
 			case 'init':
+				vm.stopAll();
 				vm.loadProject(message.body.value).then(() => vm.greenFlag());
 				break;
 		}

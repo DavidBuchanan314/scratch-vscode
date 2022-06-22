@@ -65,7 +65,16 @@ export class ScratchViewerEditorProvider implements vscode.CustomReadonlyEditorP
 			console.log("vscode got message", e);
 			if (e.type === 'ready') {
 				this.postMessage(webviewPanel, 'init', {
-					value: new Uint8Array(filedata)
+					value: filedata
+				});
+				const watcher = vscode.workspace.createFileSystemWatcher(document.uri.path);
+				watcher.onDidChange(async e => {
+					if (e.toString() === document.uri.toString()) {
+						console.log("DID CHANGE", e);
+						this.postMessage(webviewPanel, 'init', {
+							value: new Uint8Array(await vscode.workspace.fs.readFile(document.uri))
+						});
+					}
 				});
 			}
 		});
