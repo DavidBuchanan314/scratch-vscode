@@ -8,6 +8,8 @@ a quick feedback loop.
 The code is a bit janky because I don't really know JS or TypeScript, and I took one
 of the vscode extension samples and hacked out everything I didn't think I needed.
 
+<img width="1512" alt="image" src="https://user-images.githubusercontent.com/13520633/174917933-384f7422-8879-4e58-b973-133b30f4b5c2.png">
+
 ## Current Limitations
 
 - Variable/List monitors are not yet supported.
