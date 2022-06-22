@@ -58,14 +58,14 @@
 		"glob": "^8.0.3",
 		"mocha": "^10.0.0",
 		"typescript": "^4.7.2",
-		"webpack-cli": "^4.10.0"
-	},
-	"dependencies": {
-		"@vscode/codicons": "^0.0.31",
+		"webpack-cli": "^4.10.0",
 		"scratch-audio": "^0.1.0-prerelease.20200528195344",
 		"scratch-render": "^0.1.0-prerelease.20211028200436",
 		"scratch-storage": "^2.0.2",
 		"scratch-svg-renderer": "^0.2.0-prerelease.20210727023023",
 		"scratch-vm": "^0.2.0-prerelease.20220602121716"
+	},
+	"dependencies": {
+		"@vscode/codicons": "^0.0.31"
 	}
 }
