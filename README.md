@@ -22,9 +22,11 @@ of the vscode extension samples and hacked out everything I didn't think I neede
 - A way to log messages from a scratch project.
 - Debugger integration? Being able to view variables at least, would be useful.
 
-# Installation
+## Installation
 
-Uhhh idk I haven't figured that out yet lol.
+Grab the `.vsix` file from the releases page, then go to vscode -> Extensions -> ... -> Install from VSIX
+
+## Testing/Development
 
 If you want to test/debug it, these steps should hopefully work:
 
@@ -34,4 +36,10 @@ cd scratch-vscode
 make install
 npm run compile
 [press F5 in vscode]
+```
+
+To build the installable `.vsix` file:
+
+```
+vsce package
 ```
